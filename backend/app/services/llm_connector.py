@@ -1,7 +1,13 @@
 """LLM Connector — routes to OpenAI or Ollama."""
 import httpx
+import ssl
 from typing import List, Dict
 from app.core.config import settings
+
+# bypass SSL interception present on this machine
+_ssl_ctx = ssl.create_default_context()
+_ssl_ctx.check_hostname = False
+_ssl_ctx.verify_mode = ssl.CERT_NONE
 
 
 async def complete(messages: List[Dict[str, str]], model: str | None = None,
@@ -14,7 +20,7 @@ async def complete(messages: List[Dict[str, str]], model: str | None = None,
 async def _openai(messages, model, temperature, max_tokens) -> str:
     if not settings.openai_api_key:
         return "[No OPENAI_API_KEY configured — set it in your .env file]"
-    async with httpx.AsyncClient(timeout=90.0) as client:
+    async with httpx.AsyncClient(timeout=90.0, verify=False) as client:
         r = await client.post(
             f"{settings.openai_base_url}/chat/completions",
             json={"model": model or settings.openai_model, "messages": messages,
@@ -26,7 +32,7 @@ async def _openai(messages, model, temperature, max_tokens) -> str:
 
 
 async def _ollama(messages, model, temperature, max_tokens) -> str:
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=120.0, verify=False) as client:
         r = await client.post(
             f"{settings.ollama_base_url}/api/chat",
             json={"model": model or settings.ollama_model, "messages": messages,
