@@ -31,6 +31,16 @@ class UserCreate(BaseModel):
     role_id: str = "employee"
     org_id: str
 
+class UserUpdate(BaseModel):
+    role_id: Optional[str] = None
+    is_active: Optional[bool] = None
+    password: Optional[str] = None
+
+class UserManagementOut(BaseModel):
+    users: List[UserOut]
+    total: int
+    role_counts: Dict[str, int]
+
 
 # ── Rules ─────────────────────────────────────────────────────────────
 class FirewallRuleCreate(BaseModel):

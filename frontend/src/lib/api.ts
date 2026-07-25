@@ -35,3 +35,10 @@ export const redteamApi = {
   run: (b: any) => api.post('/redteam/run', b).then(r => r.data),
 }
 export const auditApi = { list: () => api.get('/audit-log').then(r => r.data) }
+
+export const userApi = {
+  list: () => api.get('/users').then(r => r.data),
+  create: (b: any) => api.post('/auth/register', b).then(r => r.data),
+  update: (id: string, b: any) => api.patch(`/users/${id}`, b).then(r => r.data),
+  delete: (id: string) => api.delete(`/users/${id}`),
+}

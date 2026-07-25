@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Shield, LayoutDashboard, Ban, Settings, Zap, ClipboardList, Search, LogOut, ChevronLeft, ChevronRight, Activity } from 'lucide-react'
+import { Shield, LayoutDashboard, Ban, Settings, Zap, ClipboardList, Search, LogOut, ChevronLeft, ChevronRight, Activity, Users } from 'lucide-react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -10,6 +10,7 @@ import RuleConfig from './pages/RuleConfig'
 import RedTeam from './pages/RedTeam'
 import AuditLog from './pages/AuditLog'
 import Inspector from './pages/Inspector'
+import UserManagement from './pages/UserManagement'
 
 // ── Splash ────────────────────────────────────────────────────────────
 function Splash() {
@@ -42,6 +43,7 @@ const NAV = [
   { to:'/inspector', icon:Search,          label:'Prompt Inspector',roles:['admin','soc_analyst','employee'] },
   { to:'/redteam',   icon:Zap,             label:'Red Team',        roles:['admin'] },
   { to:'/audit',     icon:ClipboardList,   label:'Audit Log',       roles:['admin'] },
+  { to:'/users',     icon:Users,           label:'User Management', roles:['admin'] },
 ]
 
 function Sidebar() {
@@ -118,6 +120,7 @@ const TITLES: Record<string,string> = {
   '/dashboard':'Security Dashboard', '/blocked':'Blocked Prompts',
   '/rules':'Firewall Rules', '/inspector':'Prompt Inspector',
   '/redteam':'Red Team Simulator', '/audit':'Audit Log',
+  '/users':'User Management',
 }
 
 function Layout() {
@@ -167,6 +170,7 @@ export default function App() {
             <Route path="inspector" element={<Inspector />} />
             <Route path="redteam"   element={<RedTeam />} />
             <Route path="audit"     element={<AuditLog />} />
+            <Route path="users"     element={<UserManagement />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -23,7 +23,7 @@ from app.schemas import (
     PromptLogOut, PromptLogDetail,
     StatsSummary, RuleCount, DailyVolume,
     RedTeamRunRequest, RedTeamRunResult, AttackResult,
-    AuditLogOut,
+    AuditLogOut, UserUpdate, UserManagementOut,
 )
 from app.services import rules_engine, adversarial_scanner, dlp_engine, output_validator, llm_connector
 from app.services.telemetry import log_prompt_decision, log_audit_event
@@ -71,6 +71,55 @@ async def register(body: UserCreate, db: AsyncSession = Depends(get_db),
     await db.flush()
     await log_audit_event(db, "user_created", details={"email": body.email})
     return user
+
+
+# ════════════════════════════════════════════════════════════════════════
+# USER MANAGEMENT  (admin only)
+# ════════════════════════════════════════════════════════════════════════
+@router.get("/users", response_model=UserManagementOut, tags=["Users"])
+async def list_users(db: AsyncSession = Depends(get_db),
+                     _: AppUser = Depends(require_role("admin"))):
+    result = await db.execute(select(AppUser).order_by(AppUser.created_at.desc()))
+    users = result.scalars().all()
+    role_counts = {}
+    for u in users:
+        role_counts[u.role_id] = role_counts.get(u.role_id, 0) + 1
+    return UserManagementOut(
+        users=[UserOut.model_validate(u) for u in users],
+        total=len(users),
+        role_counts=role_counts,
+    )
+
+
+@router.patch("/users/{user_id}", response_model=UserOut, tags=["Users"])
+async def update_user(user_id: str, body: UserUpdate, db: AsyncSession = Depends(get_db),
+                      current_user: AppUser = Depends(require_role("admin"))):
+    r = await db.execute(select(AppUser).where(AppUser.user_id == user_id))
+    user = r.scalar_one_or_none()
+    if not user:
+        raise HTTPException(404, "User not found")
+    if user.user_id == current_user.user_id:
+        raise HTTPException(400, "Cannot modify your own account")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        if k == "password":
+            setattr(user, "hashed_password", hash_password(v))
+        else:
+            setattr(user, k, v)
+    await log_audit_event(db, "user_updated", current_user.user_id, {"target": user_id})
+    return user
+
+
+@router.delete("/users/{user_id}", status_code=204, tags=["Users"])
+async def delete_user(user_id: str, db: AsyncSession = Depends(get_db),
+                      current_user: AppUser = Depends(require_role("admin"))):
+    r = await db.execute(select(AppUser).where(AppUser.user_id == user_id))
+    user = r.scalar_one_or_none()
+    if not user:
+        raise HTTPException(404, "User not found")
+    if user.user_id == current_user.user_id:
+        raise HTTPException(400, "Cannot delete your own account")
+    await db.delete(user)
+    await log_audit_event(db, "user_deleted", current_user.user_id, {"email": user.email})
 
 
 # ════════════════════════════════════════════════════════════════════════
