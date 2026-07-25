@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.pkl
+*.joblib
+node_modules/
+frontend/dist/
+.venv/
+venv/
+coverage.xml
+ai/adversarial_scanner/model/*.pkl
+ai/adversarial_scanner/model/*.joblib

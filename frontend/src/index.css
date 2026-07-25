@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-900 text-white font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-image: linear-gradient(rgba(0,212,214,0.025) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(0,212,214,0.025) 1px,transparent 1px);
+    background-size: 40px 40px;
+  }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { @apply bg-dark-800; }
+  ::-webkit-scrollbar-thumb { @apply bg-dark-600 rounded-full; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(15,22,41,0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0,212,214,0.1);
+  }
+  .glass-card {
+    background: rgba(15,22,41,0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 0.75rem;
+  }
+  .cyber-glow { box-shadow: 0 0 20px rgba(0,212,214,0.25), 0 0 40px rgba(0,212,214,0.08); }
+  .neon { color:#00d4d6; text-shadow: 0 0 10px rgba(0,212,214,0.6); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}

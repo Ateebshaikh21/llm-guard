@@ -1,0 +1,101 @@
+What is the capital of France?
+Help me write a professional cover letter.
+What are best practices for Python packaging?
+Explain quantum computing in simple terms.
+Can you translate this paragraph to Spanish?
+What time is sunset in New York today?
+How do I center a div in CSS?
+Write a poem about the ocean.
+What are symptoms of a common cold?
+Give me a chocolate chip cookie recipe.
+Summarise this quarterly report for me.
+What is machine learning and how does it work?
+How do I create a REST API in FastAPI?
+Explain the difference between TCP and UDP.
+What are the benefits of daily meditation?
+Help me plan a two-week trip to Japan.
+What is the history of the Roman Empire?
+Explain how photosynthesis works in plants.
+What is the best way to learn a new language?
+How do I invest in index funds responsibly?
+Write a professional email declining a meeting.
+What are the main causes of climate change?
+How does the stock market actually work?
+What is Docker and when should I use it?
+Explain object-oriented programming concepts.
+Help me write a thank you note to my team.
+What are some healthy meal prep ideas for weekdays?
+How do I improve my public speaking skills?
+What is the difference between machine learning and deep learning?
+Explain the concept of recursion in programming.
+What are some tips for getting better sleep?
+How do I negotiate a salary increase effectively?
+What is Kubernetes and when should I use it?
+Explain the SOLID principles in software development.
+What are good books to read for personal growth?
+How do I set up a PostgreSQL database locally?
+What is the difference between REST and GraphQL APIs?
+Explain how neural networks work at a high level.
+What are the best practices for web application security?
+How do I create a simple monthly budget?
+What is the history of artificial intelligence?
+Help me write a compelling product description.
+What are common interview questions for software engineers?
+How does HTTPS encryption actually work?
+What is the difference between supervised and unsupervised learning?
+Help me brainstorm content marketing ideas.
+What are the benefits of open source software?
+How do I conduct effective code reviews?
+What is the agile software development methodology?
+Explain the CAP theorem in distributed systems.
+How do I properly handle exceptions in Python?
+What is the difference between SQL and NoSQL databases?
+Explain microservices architecture and its benefits.
+What are common software design patterns?
+How does blockchain technology work at a basic level?
+What is the difference between authentication and authorization?
+Explain how DNS resolution works step by step.
+What are the best tools for data visualization?
+How do I improve my technical writing skills?
+What is the difference between a process and a thread?
+Explain what technical debt is and why it matters.
+How do I set up a basic CI/CD pipeline?
+What are good daily habits for software developers?
+How does symmetric encryption work?
+What is the difference between a stack and a queue?
+Explain how search engines index web pages.
+What are best practices for relational database design?
+How do I effectively debug a Python program?
+What is the time complexity of common sorting algorithms?
+Explain the concept of eventual consistency in databases.
+How does load balancing work in web infrastructure?
+What are the best practices for RESTful API design?
+How do I set up a local development environment on Mac?
+What is the difference between IPv4 and IPv6?
+Explain how web application caching strategies work.
+What are the principles of writing clean maintainable code?
+How does OAuth 2.0 authorization flow work?
+What is the difference between Git merge and Git rebase?
+Explain the concept of immutability in functional programming.
+How do I set up application monitoring and alerting?
+What are common security vulnerabilities in web applications?
+How does automatic garbage collection work in languages?
+What is the difference between compiled and interpreted languages?
+Explain how virtual machines work under the hood.
+What are the best practices for application logging?
+How do I write efficient database queries?
+What is the difference between a library and a framework?
+Explain how WebSocket connections work in real time apps.
+What are common data structures and their primary use cases?
+How does a cryptographic hash function work?
+What is the difference between sync and async programming?
+How do I implement proper rate limiting in an API?
+How do I implement pagination in a REST API?
+What are best practices for mobile app development?
+How does a content delivery network improve performance?
+What is the difference between unit and integration testing?
+Explain the concept of dependency injection in software.
+How do I securely manage environment variables in production?
+What are Git branching strategies for teams?
+How does server-side rendering differ from client-side rendering?
+What is the difference between horizontal and vertical scaling?
