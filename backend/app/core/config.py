@@ -4,10 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+    env_file=".env",
+    env_file_encoding="utf-8",
+    extra="ignore",
+)
 
     # Database
     database_url: str = "mysql+aiomysql://root:toor@localhost:3306/llmguard"
@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     max_prompt_length: int = 4000
     ml_inference_url: str = "http://localhost:8001"
     ml_model_path: str = "../ai/adversarial_scanner/model/classifier.pkl"
+
+    # DLP Configuration
+    dlp_enabled: bool = True
+    dlp_language: str = "en"
+    dlp_confidence_threshold: float = 0.75
+    dlp_redis_ttl: int = 3600
+    dlp_placeholder_format: str = "uuid"  # uuid | sequential
 
     # Alerts
     alerts_enabled: bool = False

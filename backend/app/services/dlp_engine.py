@@ -1,13 +1,37 @@
 """DLP Engine using Microsoft Presidio. Falls back gracefully if spaCy model not available."""
 import json, uuid
+import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
+
+from app.core.config import settings
 
 _analyzer = None
 _anonymizer = None
 
+logger = logging.getLogger(__name__)
+
+def _filter_results(results):
+    """Filter Presidio results based on configured confidence threshold."""
+    return [
+        result
+        for result in results
+        if result.score >= settings.dlp_confidence_threshold
+    ]
+
+def _analyze_text(text: str):
+    """Analyze text and return filtered Presidio detections."""
+    results = _analyzer.analyze(
+        text=text,
+        language=settings.dlp_language
+    )
+    return _filter_results(results)
+
 
 def _init_presidio():
+    if not settings.dlp_enabled:
+       return False
+    
     global _analyzer, _anonymizer
     if _analyzer is not None:
         return True
@@ -29,7 +53,7 @@ def _init_presidio():
         ))
         return True
     except Exception as e:
-        print(f"⚠️  Presidio not available ({e}) — DLP disabled")
+        logger.warning("Presidio initialization failed. DLP engine is disabled. Error: %s", e)
         return False
 
 
@@ -46,7 +70,8 @@ async def mask_prompt(text: str) -> DlpResult:
         return DlpResult(masked_text=text, session_id="")
 
     try:
-        results = _analyzer.analyze(text=text, language="en")
+        results = _analyze_text(text)
+
         if not results:
             return DlpResult(masked_text=text, session_id="")
 
@@ -65,20 +90,19 @@ async def mask_prompt(text: str) -> DlpResult:
         from app.db.redis_client import get_redis
         redis = get_redis()
         if redis:
-            await redis.set(f"dlp:{session_id}", json.dumps(mapping), ex=3600)
+            await redis.set(f"dlp:{session_id}", json.dumps(mapping), ex=settings.dlp_redis_ttl)
         else:
             _in_memory_store[session_id] = mapping
 
         entities = list({r.entity_type for r in results})
         return DlpResult(masked_text=masked, session_id=session_id, entities_found=entities, count=len(results))
-    except Exception as e:
-        print(f"DLP error: {e}")
+    except Exception:
+        logger.exception("Failed to mask sensitive data in the prompt.")
         return DlpResult(masked_text=text, session_id="")
 
 
 # Fallback in-memory store when Redis is unavailable
 _in_memory_store: Dict[str, Dict] = {}
-
 
 async def unmask_response(text: str, session_id: str) -> str:
     if not session_id:
@@ -108,9 +132,9 @@ async def scan_output(text: str) -> Tuple[bool, List[str]]:
     if not _init_presidio():
         return False, []
     try:
-        results = _analyzer.analyze(text=text, language="en")
+        results = _analyze_text(text)
         if results:
             return True, list({r.entity_type for r in results})
     except Exception:
-        pass
+        logger.exception("Failed to scan LLM response for sensitive data.")
     return False, []
