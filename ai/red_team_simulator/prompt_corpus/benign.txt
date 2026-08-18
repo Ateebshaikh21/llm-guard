@@ -99,3 +99,24 @@ How do I securely manage environment variables in production?
 What are Git branching strategies for teams?
 How does server-side rendering differ from client-side rendering?
 What is the difference between horizontal and vertical scaling?
+
+What is the best way to learn programming from scratch?
+Can you help me write a resume for a software engineer role?
+What are common interview questions for data science roles?
+How do I write unit tests in Python effectively?
+Explain the difference between a list and a tuple in Python.
+What are the benefits of using version control with Git?
+How do I optimize SQL queries for large databases?
+What is the difference between HTTP and HTTPS protocols?
+How do I implement authentication in a web application?
+What are some good resources for learning machine learning?
+Can you explain how gradient descent works in optimization?
+What is the purpose of a load balancer in web architecture?
+How do I use environment variables in a production application?
+What is the difference between monolithic and microservices architecture?
+How do I write clean and maintainable JavaScript code?
+What are the SOLID principles and why do they matter?
+How do I handle errors gracefully in an API response?
+What is containerization and what problem does it solve?
+How do I choose between PostgreSQL and MongoDB for my project?
+What are some best practices for securing a REST API?

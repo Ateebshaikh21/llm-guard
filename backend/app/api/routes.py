@@ -27,12 +27,52 @@ from app.schemas import (
 )
 from app.services import rules_engine, adversarial_scanner, dlp_engine, output_validator, llm_connector
 from app.services.telemetry import log_prompt_decision, log_audit_event
+from app.db.redis_client import get_redis as _get_redis  # module-level for rate-limit patching in tests
 
 router = APIRouter()
 ORG_ID = "00000000-0000-0000-0000-000000000001"   # single-tenant default
 
 # ── In-memory red-team run store ──────────────────────────────────────
 _redteam_runs: dict = {}
+
+import logging as _logging
+_rate_logger = _logging.getLogger(__name__)
+
+
+async def _check_rate_limit(user_id: str) -> None:
+    """
+    Per-user Redis-backed sliding-window rate limiter for /proxy/inspect.
+
+    If Redis is unavailable the check is skipped with a warning (fail-open).
+    The alternative — fail-closed — would block all requests during Redis outages,
+    which is worse for a security firewall that should remain transparent.
+
+    Raises HTTP 429 when the limit is exceeded.
+    """
+    redis = _get_redis()
+    if not redis:
+        _rate_logger.warning("[rate_limit] Redis unavailable — rate limiting skipped for user %s", user_id)
+        return
+
+    key    = f"rl:inspect:{user_id}"
+    limit  = settings.inspect_rate_limit
+    window = settings.inspect_rate_window
+
+    try:
+        count = await redis.incr(key)
+        if count == 1:
+            await redis.expire(key, window)
+        if count > limit:
+            _rate_logger.warning("[rate_limit] User %s exceeded %d req/%ds", user_id, limit, window)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded: {limit} requests per {window}s. Retry later.",
+                headers={"Retry-After": str(window)},
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        _rate_logger.warning("[rate_limit] Rate-limit check failed (%s) — proceeding", exc)
 
 
 # ════════════════════════════════════════════════════════════════════════
@@ -128,6 +168,9 @@ async def delete_user(user_id: str, db: AsyncSession = Depends(get_db),
 @router.post("/proxy/inspect", response_model=InspectResponse, tags=["Proxy"])
 async def inspect(body: InspectRequest, db: AsyncSession = Depends(get_db),
                   current_user: AppUser = Depends(get_current_user)):
+    # Rate limit — per authenticated user, Redis-backed
+    await _check_rate_limit(current_user.user_id)
+
     full_prompt = " ".join(m.content for m in body.messages if m.role == "user")
 
     # Step 1 — Rules
@@ -164,6 +207,32 @@ async def inspect(body: InspectRequest, db: AsyncSession = Depends(get_db),
 
     # Step 5 — Validate + unmask
     validation = await output_validator.validate_output(raw_response)
+
+    # SECURITY: if the validator flags the response as unsafe (or itself
+    # failed), block the response and record the correct status.
+    if not validation.safe:
+        block_reason = (
+            "Output validation failed (internal error)"
+            if validation.validator_error
+            else f"Output blocked by validator: {'; '.join(validation.reasons)}"
+        )
+        pid = await log_prompt_decision(
+            db, current_user.user_id, full_prompt, "blocked",
+            block_reason,
+            jailbreak_probability=scan.jailbreak_probability,
+            ml_label=scan.label,
+            dlp_entities=dlp.entities_found,
+        )
+        await log_audit_event(
+            db, "output_blocked", current_user.user_id,
+            {"reason": block_reason, "validator_error": validation.validator_error},
+        )
+        return InspectResponse(
+            prompt_id=pid,
+            status="blocked",
+            block_reason=block_reason,
+        )
+
     final = await dlp_engine.unmask_response(validation.sanitized_text, dlp.session_id)
 
     status_flag = "modified" if dlp.count > 0 else "allowed"

@@ -25,6 +25,8 @@ BUILTIN_RULES = [
             r"developer\s+mode",
             r"sudo\s+mode",
             r"enable\s+unrestricted\s+mode",
+            r"unrestricted\s+mode",
+            r"all\s+(guidelines|rules|restrictions|policies)\s+(suspended|removed|disabled|void|lifted)",
             r"jailbreak",
         ],
     },
@@ -92,6 +94,13 @@ COMPILED_BUILTIN_RULES = [
     for rule in BUILTIN_RULES
 ]
 
+# Flat list of all compiled patterns — exported for tests and red-team gate
+BUILTIN_PATTERNS = [
+    pattern
+    for rule in COMPILED_BUILTIN_RULES
+    for pattern in rule["patterns"]
+]
+
 logger = logging.getLogger(__name__)
 
 
@@ -154,6 +163,7 @@ async def evaluate_rules(
     prompt_text: str,
     db: AsyncSession,
     org_id: str,
+    max_length: Optional[int] = None,
 ) -> RuleCheckResult:
     """
     Evaluate a prompt against built-in and database firewall rules.
@@ -168,17 +178,18 @@ async def evaluate_rules(
     """
 
     normalized_prompt = prompt_text.lower()
+    effective_max_length = max_length if max_length is not None else settings.max_prompt_length
 
     # 1. Length
-    if len(prompt_text) > settings.max_prompt_length:
+    if len(prompt_text) > effective_max_length:
         logger.warning(
             "Prompt blocked because it exceeded the configured maximum length (%d).",
-            settings.max_prompt_length,
+            effective_max_length,
         )
 
         return RuleCheckResult(
             blocked=True,
-            reason=f"Prompt exceeds maximum length of {settings.max_prompt_length} characters.",
+            reason=f"Prompt exceeds maximum length of {effective_max_length} characters.",
         )
 
     # 2. Built-in patterns

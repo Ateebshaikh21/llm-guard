@@ -14,6 +14,8 @@ from app.api.routes import router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🛡️  LLM-Guard starting...")
+    # Validate production configuration — raises RuntimeError if unsafe in production
+    settings.validate_production_secrets()
     await init_db()
     await init_redis()
     print("✅ Ready — visit http://localhost:8000/docs")
