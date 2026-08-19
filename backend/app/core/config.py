@@ -73,6 +73,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     cors_origins: List[str] = ["http://localhost:5173", "http://localhost:3000"]
     api_prefix: str = "/api/v1"
+    # PORT is set automatically by Railway/Render/Fly
+    port: int = 8000
 
     def validate_production_secrets(self) -> None:
         """

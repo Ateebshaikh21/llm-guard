@@ -36,9 +36,30 @@ def _init_presidio():
     if _analyzer is not None:
         return True
     try:
+        # Pre-populate tldextract with its bundled snapshot so it never
+        # attempts SSL network calls (which fail behind corporate SSL proxies).
+        try:
+            import tldextract as _tld
+            _extractor = _tld.TLDExtract(cache_dir=None, suffix_list_urls=[])
+            _extractor("warmup@example.com")
+        except Exception:
+            pass
+
         from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
+        from presidio_analyzer.nlp_engine import NlpEngineProvider
         from presidio_anonymizer import AnonymizerEngine
-        _analyzer = AnalyzerEngine()
+
+        # Build NLP engine from the already-installed spaCy model.
+        # This avoids Presidio calling spacy.cli.download() which makes
+        # an SSL-verified network request to GitHub on every startup.
+        nlp_config = {
+            "nlp_engine_name": "spacy",
+            "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}],
+        }
+        provider = NlpEngineProvider(nlp_configuration=nlp_config)
+        nlp_engine = provider.create_engine()
+
+        _analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
         _anonymizer = AnonymizerEngine()
 
         # Custom: API keys
@@ -51,6 +72,7 @@ def _init_presidio():
             ],
             name="ApiKeyRecognizer",
         ))
+        logger.info("Presidio DLP engine initialised successfully.")
         return True
     except Exception as e:
         logger.warning("Presidio initialization failed. DLP engine is disabled. Error: %s", e)

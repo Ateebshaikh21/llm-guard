@@ -1,6 +1,12 @@
 import axios from 'axios'
 
-export const api = axios.create({ baseURL: '/api/v1' })
+// In production the VITE_API_URL env var points to the deployed backend.
+// In development Vite proxies /api → localhost:8000 so no env var is needed.
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : '/api/v1'
+
+export const api = axios.create({ baseURL: BASE_URL })
 
 api.interceptors.request.use(cfg => {
   const t = localStorage.getItem('token')
